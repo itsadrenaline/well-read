@@ -155,6 +155,13 @@ details p{margin:10px 0 0;max-width:65ch}
 .move ol{margin:0;padding:0;list-style:none;display:grid;gap:8px;counter-reset:s}
 .move li{display:grid;grid-template-columns:26px 1fr;gap:8px;counter-increment:s}
 .move li::before{content:counter(s);width:24px;height:24px;border-radius:50%;background:var(--amber);color:#2A1900;font-weight:700;font-size:13px;display:grid;place-items:center}
+.stage{display:grid;border:1.5px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface2)}
+.stage svg.dia{width:100%;height:auto;display:block;background:radial-gradient(120% 90% at 50% 100%,#3A2470 0%,#1D1538 70%)}
+.stage .body{padding:14px 16px 16px;display:grid;gap:12px;align-content:center}
+.stage ol{margin:0;padding:0;list-style:none;display:grid;gap:8px;counter-reset:s}
+.stage li{display:grid;grid-template-columns:26px 1fr;gap:8px;counter-increment:s}
+.stage li::before{content:counter(s);width:24px;height:24px;border-radius:50%;background:var(--amber);color:#2A1900;font-weight:700;font-size:13px;display:grid;place-items:center}
+@media (min-width:760px){.stage{grid-template-columns:minmax(0,340px) 1fr}}
 .say{font-family:var(--serif);font-style:italic;font-size:24px;line-height:1.1;margin:0}
 .say small{display:block;font-family:var(--display);font-style:normal;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--rose)}
 
@@ -218,7 +225,7 @@ footer p{max-width:65ch;margin:0 0 8px}
   <section id="shelf" style="--c:var(--amber)">
     <div class="sec-head"><h2>Her <span>shelf</span></h2><p id="shelfCount"></p></div>
     <div class="filters">
-      <input type="search" id="q" placeholder="Search a title or author" aria-label="Search a title or author">
+      <input type="search" id="q" placeholder="Search a title, series or author" aria-label="Search a title, series or author">
       <select id="tropeSel" aria-label="Filter by trope"></select>
       <div class="chips" id="genres"></div>
     </div>
@@ -230,7 +237,7 @@ footer p{max-width:65ch;margin:0 0 8px}
   </section>
 
   <section id="moves" style="--c:var(--violet)">
-    <div class="sec-head"><h2>The <span>moves</span></h2><p>These books run on body language. Six moves show up in almost every one of them. Here is where everything goes and what to say.</p></div>
+    <div class="sec-head"><h2>The <span>moves</span></h2><p>These books run on body language. Six moves show up in almost every one of them. Here is where everything goes and what to say. Each full brief also has its own staged scene from that book.</p></div>
     <div class="moves" id="moveGrid"></div>
   </section>
 
@@ -246,6 +253,7 @@ footer p{max-width:65ch;margin:0 0 8px}
 </div>
 
 <script src="books.js"></script>
+<script src="diagrams.js"></script>
 <script>
 var ICON = {
   line:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H10l-5 4v-4H4z"/></svg>',
@@ -294,38 +302,61 @@ var EXTRA = {
   "quicksilver":{tr:["etl","mates","shadow","prox"]},
   "serpent":{tr:["trials","etl","prox","grey"]},
   "moon-hatched":{tr:["mates","first","slow","hidden"]},
-  "bridge-kingdom":{tr:["marriage","etl","hidden","first"]}
+  "bridge-kingdom":{tr:["marriage","etl","hidden","first"]},
+  "gild":{tr:["grey","shadow","slow","dark","hidden"]},
+  "zodiac":{tr:["etl","grey","slow","found","dark"]},
+  "wicked":{tr:["etl","grey","slow","hidden"]},
+  "one-dark-window":{tr:["slow","grey","prox","fake"]},
+  "bride":{tr:["marriage","mates","first","prox"]},
+  "icebreaker":{tr:["prox","first","found","etl"]},
+  "love-hypothesis":{tr:["fake","grump","first","bed"]},
+  "never-got-over":{tr:["grump","prox","found","touch"]},
+  "twisted-love":{tr:["grump","grey","touch","prox"]}
 };
 /* id, title, author, heat, genre, tropes, one-liner */
 var QUICK = [
+["haunting-adeline","Haunting Adeline","H.D. Carlton",5,"c",["dark","grey","touch"],"An author moves into her grandmother's gothic manor and picks up a stalker. Extremely dark, with scenes many readers will not want. Ask her about content warnings before you say a word."],
+["binding-13","Binding 13","Chloe Walsh",2,"c",["slow","touch","first"],"The first Boys of Tommen book. A bullied girl at a new school in Ireland and the rugby star who decides nobody hurts her again. School-age characters, heavy themes, enormous fandom."],
+["pucking-around","Pucking Around","Emily Rath",5,"c",["found","prox","first"],"A team physical therapist ends up with three hockey players and nobody is asked to choose. The book that made 'why choose' a hockey thing."],
+["flawless","Flawless","Elsie Silver",4,"c",["prox","grump","slow","bed"],"A pro bull rider with an image problem is assigned a minder: his agent's daughter. Cowboys, shared hotel rooms, small-town Canada."],
+["done-dusted","Done and Dusted","Lyla Sage",3,"c",["first","found"],"The ranch family's wild-child daughter comes home to Wyoming and falls for her brother's best friend."],
+["king-of-wrath","King of Wrath","Ana Huang",4,"c",["marriage","grump","etl"],"A billionaire is blackmailed into an engagement with a jewelry heiress he plans to get rid of. He does not get rid of her."],
+["happy-place","Happy Place","Emily Henry",3,"c",["fake","prox"],"A couple who secretly broke up months ago have to share a bedroom on the yearly friends' trip and act like nothing has changed."],
+["people-we-meet","People We Meet on Vacation","Emily Henry",2,"c",["slow"],"Two opposite best friends took a trip together every summer until one went wrong. This is the trip to fix it."],
+["rwrb","Red, White and Royal Blue","Casey McQuiston",3,"c",["etl","hidden","fake"],"The president's son and a British prince have to fake a friendship after a public disaster, and it turns into a secret romance. Two men."],
+["butcher-blackbird","Butcher and Blackbird","Brynne Weaver",4,"c",["dark","slow","first"],"Two serial killers who only hunt other killers meet for a yearly contest and slowly fall for each other. Somehow a romantic comedy."],
+["lights-out","Lights Out","Navessa Allen",4,"c",["dark","grey","first"],"A trauma nurse with a thing for masked men online gets noticed by one of them. Dark, but played for laughs more than fear."],
+["verity","Verity","Colleen Hoover",3,"c",["dark","prox"],"A broke writer is hired to finish a famous author's series and finds a manuscript in the house that she was never meant to read. A thriller with romance in it."],
+["housemaid","The Housemaid","Freida McFadden",2,"c",["dark","hidden"],"Not a romance. A live-in maid with a past takes a job with a rich family, and nothing in that house is what it looks like. The thriller everyone on BookTok has read."],
+["pumpkin-spice","The Pumpkin Spice Cafe","Laurie Gilmore",2,"c",["grump","prox"],"A woman inherits a small-town cafe and keeps needing help from the gruff farmer who delivers the produce. Cozy and low stakes."],
+["touch-of-darkness","A Touch of Darkness","Scarlett St. Clair",4,"f",["grey","shadow","prox"],"Hades and Persephone in a modern city. A journalism student loses a bet to the god of the dead and has to create life in the Underworld."],
+["neon-gods","Neon Gods","Katee Robert",5,"f",["fake","grey","prox","touch"],"Hades and Persephone again, in a modern city without magic. She runs from an arranged marriage and makes a very public deal with him."],
+["her-soul","Her Soul to Take","Harley Laroux",5,"f",["dark","grey","touch"],"A college student in a foggy Washington town attracts a demon who would rather keep her than collect her. Very dark and very explicit."],
+["ice-planet","Ice Planet Barbarians","Ruby Dixon",5,"f",["mates","prox","first"],"Women abducted by aliens crash on an ice planet full of large blue men who are extremely devoted. Exactly what it sounds like, and beloved."],
+["hurricane-wars","The Hurricane Wars","Thea Guanzon",2,"f",["etl","marriage","slow"],"A girl with light magic and the prince of the empire that hunts her kind are pushed into a political marriage."],
+["sun-queen","Trial of the Sun Queen","Nisha Tuli",3,"f",["trials","hidden","etl"],"A prisoner is pulled out of a brutal jail and dropped into a contest to become the Sun King's queen, with no idea why she was chosen."],
+["games-gods-play","The Games Gods Play","Abigail Owen",3,"f",["trials","slow","grey"],"Hades enters a cursed thief as his champion in the gods' deadly games for the throne of Olympus."],
+["belladonna","Belladonna","Adalyn Grace",2,"f",["slow","grey","shadow"],"A girl who cannot die investigates a poisoning in a gloomy mansion with help from Death himself, who is very interested in her."],
+["court-cruel","A Court This Cruel and Lovely","Stacia Stark",3,"f",["etl","prox","hidden","slow"],"A village girl hiding forbidden magic strikes a bargain with a brutal mercenary to break into the king's castle."],
 ["shield-of-sparrows","Shield of Sparrows","Devney Perry",3,"f",["marriage","slow","hidden","etl"],"The overlooked princess gets married off in her sister's place to a kingdom that hunts monsters, and keeps running into its infuriating Guardian."],
 ["fate-inked","A Fate Inked in Blood","Danielle L. Jensen",4,"f",["marriage","prox","touch"],"Viking-flavored. A woman with a goddess's blood is claimed as a jarl's wife and guarded by his son, which is the problem."],
 ["alchemised","Alchemised","SenLinYu",3,"f",["dark","etl","prox","grey"],"After a lost war, a healer with missing memories is held captive by the enemy's most feared necromancer. Bleak, huge, obsessively loved."],
 ["rose-in-chains","Rose in Chains","Julie Soto",3,"f",["dark","etl","prox","hidden"],"A captured heir is auctioned to the enemy and bought by a boy she knew at school. Dark and tense."],
-["one-dark-window","One Dark Window","Rachel Gillig",2,"f",["slow","grey","prox","fake"],"Gothic and foggy. A girl with a monster living in her head joins a highwayman to hunt enchanted cards."],
 ["knight-moth","The Knight and the Moth","Rachel Gillig",2,"f",["slow","etl","found"],"A cloistered prophetess and a rude, faithless knight go looking for her missing sisters."],
 ["everflame","Spark of the Everflame","Penn Cole",3,"f",["slow","hidden","etl","touch"],"A mortal healer with a secret gets pulled into the world of the immortals who rule her. Slow build, big payoff later."],
-["wicked","Kingdom of the Wicked","Kerri Maniscalco",2,"f",["etl","grey","slow"],"A Sicilian witch summons a prince of Hell to avenge her twin sister. Food descriptions will make you hungry."],
-["zodiac","Zodiac Academy","Caroline Peckham and Susanne Valenti",4,"f",["etl","grey","slow"],"Twin sisters learn they are fae royalty and get thrown into an academy where four powerful heirs want them gone. Long and addictive."],
 ["powerless","Powerless","Lauren Roberts",2,"f",["trials","etl","hidden","slow"],"A girl with no powers fakes her way through deadly trials while the prince whose job is hunting people like her falls for her."],
 ["divine-rivals","Divine Rivals","Rebecca Ross",1,"f",["etl","slow","hidden"],"Rival young journalists, a war between gods and magic typewriters that deliver anonymous letters. Sweet and sad."],
 ["cruel-prince","The Cruel Prince","Holly Black",1,"f",["etl","grey","marriage"],"A human girl raised in Faerie schemes her way to power and tangles with the cruelest prince at court."],
 ["shatter-me","Shatter Me","Tahereh Mafi",2,"f",["grey","first","touch"],"A girl whose touch can kill is locked away until a young commander decides she is a weapon. Ask her about Warner."],
-["gild","Gild","Raven Kennedy",3,"f",["grey","shadow","slow","dark"],"The King Midas myth from the point of view of the golden woman he keeps in a cage. Gets darker and better as it goes."],
 ["lightlark","Lightlark","Alex Aster",2,"f",["trials","hidden","grey"],"Six cursed rulers meet on an island once a century for a game where one of them has to die."],
 ["heartless-hunter","Heartless Hunter","Kristen Ciccarelli",3,"f",["etl","hidden","fake"],"A witch hiding as a shallow socialite courts the witch hunter trying to catch her. Each plans to use the other."],
 ["broken-heart","Once Upon a Broken Heart","Stephanie Garber",1,"f",["grey","slow"],"A heartbroken girl makes a deal with a dangerous immortal whose kiss is fatal. Fairy-tale pretty."],
 ["assistant-villain","Assistant to the Villain","Hannah Nicole Maehrer",2,"f",["grump","slow","grey"],"An office comedy where a cheerful young woman takes a job as assistant to the kingdom's evil overlord. Light and funny."],
-["bride","Bride","Ali Hazelwood",4,"f",["marriage","mates","first","prox"],"A vampire is married off to a werewolf alpha to keep the peace. He acts like he cannot stand her. He can."],
 ["no-worlds","Daughter of No Worlds","Carissa Broadbent",3,"f",["slow","grump","found","prox"],"A woman who bought her own freedom trains under a grumpy hermit wizard so she can go back for the people she left."],
 ["phantasma","Phantasma","Kaylie Smith",4,"f",["trials","prox","grey"],"A necromancer enters a deadly haunted-mansion contest and makes a bargain with a phantom who offers to help."],
 ["wren","The Wren in the Holly Library","K.A. Linde",3,"f",["prox","grey","found"],"A thief in a monster-run New York breaks into the wrong library and ends up doing a heist with its owner."],
-["icebreaker","Icebreaker","Hannah Grace",4,"c",["prox","first","found"],"A competitive figure skater and a hockey captain are forced to share a rink. He is a golden retriever in skates."],
 ["heated-rivalry","Heated Rivalry","Rachel Reid",4,"c",["etl","slow","hidden"],"Two rival pro hockey stars keep a secret going for years. Two men, a hit TV show and a huge fan base."],
-["love-hypothesis","The Love Hypothesis","Ali Hazelwood",3,"c",["fake","grump","first"],"A grad student fake dates the most feared professor in her department. The modern fake-dating standard."],
 ["it-ends","It Ends with Us","Colleen Hoover",3,"c",[],"A florist falls for a surgeon as her first love comes back into her life. It is really about leaving an abusive relationship, so tread gently."],
-["twisted-love","Twisted Love","Ana Huang",4,"c",["grump","grey","touch","prox"],"Her brother's cold, rich best friend is asked to look after her. He takes the job very seriously."],
-["never-got-over","Things We Never Got Over","Lucy Score",4,"c",["grump","prox","found"],"A runaway bride gets stranded in a small town with a surprise niece and a bearded grump who keeps showing up to help."],
 ["book-lovers","Book Lovers","Emily Henry",3,"c",["etl","slow"],"A sharp literary agent keeps running into her editor nemesis in a tiny town. Witty, grown-up, low drama."]
 ];
 var RECS = {
@@ -337,60 +368,23 @@ var RECS = {
   "quicksilver":[["moon-hatched","Big strange world, a gruff hero and fated mates."],["shield-of-sparrows","Enemies who snipe at each other across a monster-filled kingdom."],["phantasma","A dangerous game and a very spicy bargain."]],
   "serpent":[["no-worlds","Same author, same emotional gut punches."],["one-dark-window","Dark, moody and built around a secret that could get her killed."],["bride","Vampire politics and a marriage neither side chose."]],
   "moon-hatched":[["knight-moth","Lyrical writing and a strange, lovely world."],["quicksilver","Easier going, and it scratches the same fated mates itch."],["alchemised","Lost memories and devotion, much darker. Check content warnings first."]],
-  "bridge-kingdom":[["fate-inked","Same author, more magic, more heat."],["heartless-hunter","Two people spying on each other while falling in love."],["shield-of-sparrows","Another arranged royal marriage in a dangerous kingdom."]]
+  "bridge-kingdom":[["fate-inked","Same author, more magic, more heat."],["heartless-hunter","Two people spying on each other while falling in love."],["shield-of-sparrows","Another arranged royal marriage in a dangerous kingdom."]],
+  "gild":[["acotar","A heroine who leaves the man she thought had saved her. Same satisfaction."],["serpent","A dangerous love interest hiding who he really is."],["one-dark-window","Dark fairy-tale mood in a much shorter read."]],
+  "zodiac":[["fourth-wing","A deadly school and a rival she should stay away from."],["crescent-city","Big cast, big drama, even bigger cliffhangers."],["powerless","Powers, trials and enemies to lovers at a quicker pace."]],
+  "wicked":[["touch-of-darkness","Another ruler of the underworld and a bargain that gets out of hand."],["one-dark-window","Gothic, moody and hard to put down."],["blood-and-ash","A bickering couple and a hero with secrets."]],
+  "one-dark-window":[["knight-moth","Same author, same eerie fairy-tale feel."],["belladonna","A gloomy mansion, a mystery and a romance with Death."],["divine-rivals","Lyrical and bittersweet, with very little heat."]],
+  "bride":[["ice-planet","Devoted, protective, not-quite-human heroes, turned all the way up."],["love-hypothesis","Same author, same humor, no fangs."],["serpent","More vampire politics and another marriage nobody chose."]],
+  "icebreaker":[["pucking-around","More hockey, more heat and more than one love interest."],["heated-rivalry","The hockey romance everyone is talking about."],["flawless","Swap the rink for a rodeo."]],
+  "love-hypothesis":[["book-lovers","Smart, funny and grown-up."],["bride","Same author, with vampires and werewolves."],["happy-place","A couple pretending in front of their friends."]],
+  "never-got-over":[["flawless","Small town, cowboys and a grump who softens."],["done-dusted","A ranch, a big family and her brother's best friend."],["pumpkin-spice","A cozy small town with a gruff farmer."]],
+  "twisted-love":[["king-of-wrath","Same author, an arranged engagement between two rich families."],["never-got-over","Another grump, and a lot funnier."],["love-hypothesis","A cold man who is soft for one person, minus the revenge."]]
 };
 var PAL=[["#7A1E2C","#FF7A45"],["#2B1B6B","#9D7BFF"],["#0F4C5C","#3FD0B6"],["#6B1B4E","#FF5C8A"],["#5A3B0A","#FFB547"],["#1B3A6B","#5CA8FF"]];
 
-BOOKS.forEach(function(b){b.full=true;b.genre="f";b.tr=EXTRA[b.id].tr;});
+var ALIAS={gild:"gild glint gleam glow gold goldfinch plated prisoner","fourth-wing":"empyrean iron flame onyx storm",acotar:"acotar mist and fury wings and ruin silver flames","throne-of-glass":"heir of fire kingdom of ash","crescent-city":"house of earth and blood","blood-and-ash":"fbaa flesh and fire",quicksilver:"brimstone fae and alchemy",serpent:"crowns of nyaxia ashes and the star-cursed king","moon-hatched":"moonfall ballad of falling dragons","bridge-kingdom":"traitor queen",zodiac:"the awakening",icebreaker:"maple hills wildfire daydream","never-got-over":"knockemout","twisted-love":"twisted games hate lies","binding-13":"boys of tommen keeping 13",powerless:"reckless fearless","cruel-prince":"folk of the air",wicked:"kingdom of the cursed feared",bride:"mate","one-dark-window":"two twisted crowns shepherd king",flawless:"chestnut springs","done-dusted":"rebel blue ranch","touch-of-darkness":"hades persephone","broken-heart":"ballad of never after","no-worlds":"war of lost hearts","alchemised":"manacled"};
+BOOKS.forEach(function(b){b.full=true;b.genre=b.g||"f";b.tr=EXTRA[b.id].tr;});
 QUICK.forEach(function(q){BOOKS.push({id:q[0],t:q[1],a:q[2],heat:q[3],genre:q[4],tr:q[5],tldr:q[6],full:false});});
 var byId={}; BOOKS.forEach(function(b,i){byId[b.id]=b;b.c=PAL[i%PAL.length];});
-
-/* the moves: side-view figures. J = [head, shoulder, hip, knee, foot, foot2, [armA elbow, hand], [armB elbow, hand]] */
-var HER="#FF5C8A", HIM="#FFB547";
-function fig(j,col){
-  var p=function(a){return a[0]+" "+a[1];}, s='<g stroke="'+col+'" fill="none" stroke-linecap="round" stroke-linejoin="round">';
-  s+='<path stroke-width="9" d="M'+p(j.hip)+'L'+p(j.k1)+'L'+p(j.f1)+'M'+p(j.hip)+'L'+p(j.k2)+'L'+p(j.f2)+'"/>';
-  s+='<path stroke-width="15" d="M'+p(j.sh)+'L'+p(j.hip)+'"/>';
-  j.arms.forEach(function(a){s+='<path stroke-width="7" d="M'+p(j.sh)+'L'+p(a[0])+'L'+p(a[1])+'"/>';});
-  s+='</g><circle cx="'+j.head[0]+'" cy="'+j.head[1]+'" r="10" fill="'+col+'"/>';
-  return s;
-}
-function pin(n,x,y){return '<circle cx="'+x+'" cy="'+y+'" r="9" fill="#120E1F" stroke="#FFB547" stroke-width="2"/><text x="'+x+'" y="'+(y+4)+'" text-anchor="middle" font-size="11" font-weight="700" fill="#FFB547" font-family="sans-serif">'+n+'</text>';}
-var GROUND='<path d="M10 190H230" stroke="#5A4A8A" stroke-width="2" stroke-linecap="round"/>';
-var MOVES=[
-{id:"lean",t:"The lean",where:"Walls and doorframes, in nearly every book on the shelf.",
- steps:["Forearm on the wall above her shoulder. One arm only.","Stop a hand's width away. She closes the gap or she does not.","Leave one side open so she can walk off whenever she likes."],say:"Tell me to move and I will.",
- art:'<path d="M46 20V190" stroke="#5A4A8A" stroke-width="6" stroke-linecap="round"/>'+
-  fig({head:[66,70],sh:[64,90],hip:[64,134],k1:[66,162],f1:[64,188],k2:[70,162],f2:[74,188],arms:[[[70,110],[76,126]]]},HER)+
-  fig({head:[104,56],sh:[110,78],hip:[122,130],k1:[120,160],f1:[114,188],k2:[130,160],f2:[136,188],arms:[[[84,56],[52,44]],[[122,102],[120,124]]]},HIM)+
-  pin(1,52,28)+pin(2,88,96)+pin(3,84,172)},
-{id:"chin",t:"The chin tilt",where:"The standard move right before a first kiss or a hard truth.",
- steps:["Two fingers under her chin. A lift, never a grip.","Raise it until she is looking at you.","Hold her eyes one breath longer than feels comfortable."],say:"Look at me. There you are.",
- art:fig({head:[98,72],sh:[96,92],hip:[96,136],k1:[98,164],f1:[96,188],k2:[102,164],f2:[106,188],arms:[[[98,112],[100,130]]]},HER)+
-  fig({head:[142,58],sh:[144,80],hip:[146,132],k1:[144,162],f1:[140,188],k2:[150,162],f2:[156,188],arms:[[[128,98],[110,84]],[[150,104],[150,126]]]},HIM)+
-  pin(1,112,100)+pin(2,84,60)+pin(3,120,44)},
-{id:"forehead",t:"The forehead rest",where:"After the battle, after the fight, after any long day apart.",
- steps:["Both hands at her jaw, thumbs on her cheeks.","Rest your forehead on hers and stop talking.","Count to five before either of you says anything."],say:"I have you.",
- art:fig({head:[108,70],sh:[102,90],hip:[98,136],k1:[100,164],f1:[98,188],k2:[104,164],f2:[108,188],arms:[[[114,108],[128,100]]]},HER)+
-  fig({head:[127,63],sh:[138,82],hip:[146,132],k1:[144,162],f1:[140,188],k2:[152,162],f2:[158,188],arms:[[[130,100],[114,80]]]},HIM)+
-  pin(1,104,48)+pin(2,128,42)+pin(3,172,70)},
-{id:"kneel",t:"The kneel",where:"Powerful men kneeling for exactly one person is a pillar of the genre.",
- steps:["Go down on one knee in front of her.","Tie the lace, fix the strap, zip the boot.","Look up at her before you stand."],say:"Hold still. I have it.",
- art:fig({head:[92,58],sh:[92,78],hip:[92,130],k1:[94,160],f1:[92,188],k2:[98,160],f2:[104,188],arms:[[[108,96],[128,112]]]},HER)+
-  fig({head:[138,100],sh:[140,120],hip:[152,160],k1:[128,160],f1:[128,188],k2:[164,186],f2:[188,186],arms:[[[126,146],[108,176]]]},HIM)+
-  pin(1,176,160)+pin(2,112,160)+pin(3,146,78)},
-{id:"carry",t:"The carry",where:"She is hurt, exhausted or just barefoot. He does not ask twice.",
- steps:["One arm behind her back, one under her knees.","Lift with your legs. Her arm goes around your neck.","Walk like it weighs nothing. Set her down gently."],say:"You have walked enough today.",
- art:fig({head:[128,48],sh:[128,70],hip:[128,126],k1:[126,158],f1:[122,188],k2:[134,158],f2:[140,188],arms:[[[110,96],[98,104]],[[140,100],[156,106]]]},HIM)+
-  fig({head:[88,80],sh:[98,90],hip:[136,104],k1:[160,96],f1:[168,124],k2:[162,98],f2:[172,122],arms:[[[112,74],[128,66]]]},HER)+
-  pin(1,84,116)+pin(2,150,54)+pin(3,186,170)},
-{id:"back",t:"The hand on the back",where:"Through every door, across every crowded ballroom.",
- steps:["Open palm at the small of her back.","Guide, never push. Stay half a step behind her.","Take the hand away once she is through the door."],say:"After you.",
- art:'<path d="M176 190V36H222V190" stroke="#5A4A8A" stroke-width="5" fill="none" stroke-linejoin="round"/>'+
-  fig({head:[86,56],sh:[84,78],hip:[84,130],k1:[90,160],f1:[84,188],k2:[80,160],f2:[94,188],arms:[[[100,100],[116,114]]]},HIM)+
-  fig({head:[130,70],sh:[128,90],hip:[128,134],k1:[136,162],f1:[130,188],k2:[124,162],f2:[142,188],arms:[[[136,108],[146,122]]]},HER)+
-  pin(1,112,134)+pin(2,62,104)+pin(3,198,22)}
-];
 
 /* deck */
 var DECK=[];
@@ -403,6 +397,7 @@ BOOKS.forEach(function(b){
   b.roles.forEach(function(r){DECK.push({k:"role",b:b.id,text:r[0],how:r[1]});});
 });
 MOVES.forEach(function(m){DECK.push({k:"move",m:m.id,text:m.t,how:m.steps.join(" ")+" Say: '"+m.say+"'"});});
+Object.keys(STAGE).forEach(function(id){var m=STAGE[id];DECK.push({k:"move",b:id,text:m.t,how:m.steps.join(" ")+" Say: '"+m.say+"'"});});
 
 var state={kind:"any",scope:"all",current:null,last:-1,genre:"all",trope:"",q:""};
 function loadJ(k,d){try{return JSON.parse(localStorage.getItem(k))||d;}catch(e){return d;}}
@@ -421,7 +416,7 @@ function fetchCovers(){
   var todo=BOOKS.filter(function(b){return !COVERS[b.id];}), n=0;
   function next(){
     var b=todo.shift(); if(!b) return;
-    fetch("https://openlibrary.org/search.json?limit=1&fields=cover_i&title="+encodeURIComponent(b.t)+"&author="+encodeURIComponent(b.a.split(" and ")[0]))
+    fetch("https://openlibrary.org/search.json?limit=1&fields=cover_i&title="+encodeURIComponent(b.ct||b.t)+"&author="+encodeURIComponent(b.a.split(" and ")[0]))
      .then(function(r){return r.json();})
      .then(function(d){
         var c=d&&d.docs&&d.docs[0]&&d.docs[0].cover_i; if(!c) return;
@@ -435,7 +430,7 @@ function fetchCovers(){
   next(); next(); next();
 }
 function buyHTML(b){
-  var q=encodeURIComponent(b.t+" "+b.a);
+  var q=encodeURIComponent((b.ct||b.t)+" "+b.a);
   return '<div class="buy"><a class="btn amber" target="_blank" rel="noopener" href="https://www.amazon.com/s?k='+q+'">Buy on Amazon</a><a class="btn ghost" target="_blank" rel="noopener" href="https://bookshop.org/search?keywords='+q+'">Buy on Bookshop</a></div>';
 }
 
@@ -456,7 +451,7 @@ function pool(){
   var out=[];
   DECK.forEach(function(c,i){
     if(state.kind!=="any"&&c.k!==state.kind) return;
-    if(c.k==="move"){out.push(i);return;}
+    if(c.k==="move"&&!c.b){out.push(i);return;}
     if(state.scope==="all"||(state.scope==="shelf"&&shelf.indexOf(c.b)>=0)||c.b===state.scope) out.push(i);
   });
   return out;
@@ -493,7 +488,7 @@ function renderTiles(){
     if(state.genre==="full"&&!b.full) return false;
     if((state.genre==="f"||state.genre==="c")&&b.genre!==state.genre) return false;
     if(state.trope&&b.tr.indexOf(state.trope)<0) return false;
-    if(q&&(b.t+" "+b.a).toLowerCase().indexOf(q)<0) return false;
+    if(q&&(b.t+" "+b.a+" "+(b.ct||"")+" "+(ALIAS[b.id]||"")).toLowerCase().indexOf(q)<0) return false;
     return true;
   });
   document.getElementById("shelfCount").textContent=BOOKS.length+" of the biggest series and standalones on BookTok. "+BOOKS.filter(function(b){return b.full;}).length+" have a full brief. Tap a cover.";
@@ -529,6 +524,8 @@ function renderBrief(){
   html+='<div class="block">'+h3("scene","Scenes she is thinking about","var(--teal)")+'<ul class="pair">'+b.scenes.map(function(s){return '<li><b>'+esc(s[0])+'</b>'+esc(s[1])+'</li>';}).join("")+'</ul></div>';
   html+='<div class="block">'+h3("role","Tonight","#FF8A5C")+'<ul class="pair">'+b.roles.map(function(s){return '<li><b>'+esc(s[0])+'</b>'+esc(s[1])+'</li>';}).join("")+'</ul></div>';
   html+='</div>';
+  var st=STAGE[b.id];
+  if(st) html+='<div class="block">'+h3("move","Stage the scene: "+esc(st.t),"var(--violet)")+'<div class="stage"><svg class="dia" viewBox="0 0 240 200" role="img" aria-label="Diagram of '+esc(st.t)+'">'+GROUND+stageArt(st.tpl,st.o)+'</svg><div class="body"><ol>'+st.steps.map(function(x){return '<li><span>'+esc(x)+'</span></li>';}).join("")+'</ol><p class="say"><small>Say</small>'+esc(st.say)+'</p></div></div></div>';
   html+='<details><summary>The twist (spoiler). Open only if she is past book one.</summary><p>'+esc(b.twist)+'</p></details>';
   if(RECS[b.id]) html+='<div class="block"><h3>If she loved this, tell her about</h3><p class="note" style="margin:0 0 10px">Your line: "I keep hearing good things about this one. It sounds like your kind of book."</p><div class="recs">'+RECS[b.id].map(function(r){return recBtn(r[0],r[1]);}).join("")+'</div></div>';
   el.innerHTML=html;
