@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Well Read</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: a playbook at night. Moving sky up top, then four color-coded rooms:
+   the deck (rose), the shelf (amber), the moves (violet), the tropes (teal). One committed dark world. */
+:root{
+  color-scheme:dark;
+  --bg:#120E1F; --surface:#1C1730; --surface2:#271F42; --ink:#F4EFF8; --muted:#AEA3C4; --line:#3A3058;
+  --rose:#FF5C8A; --amber:#FFB547; --teal:#3FD0B6; --violet:#A98BFF;
+  --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --body:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --serif:"Instrument Serif",Georgia,"Times New Roman",serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;-webkit-text-size-adjust:100%}
+.wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+h1,h2,h3{font-family:var(--display);font-weight:800;text-transform:uppercase;letter-spacing:.01em;line-height:.95;margin:0;text-wrap:balance}
+button{font:inherit;color:inherit;cursor:pointer}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+
+/* hero */
+.hero{position:relative;overflow:hidden;min-height:520px;display:flex;flex-direction:column;background:#0B0710}
+.hero canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hero video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .6s}
+.hero video.on{opacity:1}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,var(--bg) 4%,rgba(18,14,31,.78) 38%,rgba(18,14,31,.15) 72%,rgba(18,14,31,.35));pointer-events:none}
+.hero .wrap{position:relative;z-index:2;width:100%;display:flex;flex-direction:column;flex:1}
+.top{display:flex;justify-content:space-between;align-items:center;padding:14px 0;gap:12px}
+.mark{font-family:var(--display);font-weight:800;font-size:26px;letter-spacing:.04em;text-transform:uppercase}
+.mark i{font-family:var(--serif);font-style:italic;text-transform:none;font-weight:400;color:var(--rose);letter-spacing:0;font-size:28px;margin-left:2px}
+.nav{display:flex;gap:14px;font-weight:600;font-size:14px}
+.nav a{text-decoration:none;padding:6px 0;border-bottom:2px solid transparent}
+.nav a:hover{border-color:var(--amber)}
+.hero-copy{margin-top:auto;padding:150px 0 26px}
+.hero h1{font-size:clamp(46px,13vw,104px);text-shadow:0 2px 24px rgba(10,6,25,.6)}
+.hero h1 em{font-family:var(--serif);font-style:italic;font-weight:400;text-transform:none;color:var(--amber);letter-spacing:-.01em;display:block}
+.hero p{max-width:50ch;margin:14px 0 18px;font-size:17px;color:#E4DCEF}
+.cta{display:flex;flex-wrap:wrap;gap:10px}
+.btn{border:0;border-radius:12px;padding:13px 18px;font-weight:600;font-size:16px;min-height:48px;background:var(--rose);color:#22071A;text-decoration:none;display:inline-flex;align-items:center}
+.btn.ghost{background:rgba(18,14,31,.45);color:var(--ink);border:1.5px solid #7B6FA0}
+.btn.amber{background:var(--amber);color:#2A1900}
+
+section{padding:40px 0 0}
+.sec-head{margin-bottom:16px;display:grid;gap:6px}
+.sec-head h2{font-size:clamp(34px,9vw,56px)}
+.sec-head h2 span{color:var(--c)}
+.sec-head p{margin:0;color:var(--muted);max-width:60ch}
+.label{font-family:var(--display);font-weight:600;text-transform:uppercase;letter-spacing:.12em;font-size:14px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-weight:600;font-size:14px;min-height:40px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+select,input[type=search]{font:inherit;font-weight:500;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;min-height:44px;max-width:100%;width:100%}
+
+/* deck */
+.deckgrid{display:grid;gap:16px}
+.controls{display:grid;gap:10px;align-content:start}
+.deal{background:linear-gradient(150deg,var(--surface2),#1A1230);border:1.5px solid var(--line);border-radius:18px;padding:22px 20px 20px;position:relative;overflow:hidden;min-height:290px;display:flex}
+.deal::before{content:"";position:absolute;inset:0 auto 0 0;width:8px;background:var(--stripe,var(--rose))}
+.deal::after{content:"";position:absolute;right:-70px;top:-70px;width:220px;height:220px;border-radius:50%;background:var(--stripe,var(--rose));opacity:.13}
+.inner{display:flex;flex-direction:column;gap:12px;flex:1;position:relative;z-index:1}
+.kind{font-family:var(--display);font-weight:800;font-size:15px;letter-spacing:.16em;text-transform:uppercase;color:var(--stripe,var(--rose));display:flex;align-items:center;gap:8px}
+.kind svg{width:20px;height:20px}
+.from{font-size:14px;color:var(--muted)}
+.deal .text{font-size:clamp(24px,6.2vw,34px);line-height:1.18;font-weight:500;text-wrap:balance}
+.deal .text.serif{font-family:var(--serif);font-style:italic;font-weight:400;font-size:clamp(30px,8vw,44px);line-height:1.08}
+.deal .how{color:#D3C9E4;font-size:15px;max-width:56ch}
+.acts{margin-top:auto;display:flex;flex-wrap:wrap;gap:10px;padding-top:6px}
+.deal.flip .inner{animation:deal .38s ease}
+@keyframes deal{from{transform:translateY(14px) rotate(-1.2deg);opacity:.2}to{transform:none;opacity:1}}
+
+/* shelf */
+.filters{display:grid;gap:10px;margin-bottom:16px}
+.shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:16px 12px}
+.cv{background:none;border:0;padding:0;text-align:left;display:grid;gap:6px;align-content:start}
+.cover{position:relative;aspect-ratio:2/3;border-radius:6px 10px 10px 6px;overflow:hidden;background:linear-gradient(155deg,var(--c1),var(--c2));display:flex;flex-direction:column;justify-content:space-between;padding:10px 9px;box-shadow:0 8px 18px rgba(0,0,0,.45), inset 4px 0 0 rgba(255,255,255,.14)}
+.cover b{font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:15px;line-height:1;color:#fff;overflow-wrap:break-word;hyphens:auto}
+.cover small{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.85)}
+.cover svg.crest{width:34px;height:34px;color:rgba(255,255,255,.85);align-self:flex-end}
+.cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cv[aria-current="true"] .cover{outline:3px solid var(--amber);outline-offset:3px}
+.cv .ttl{font-weight:600;font-size:13px;line-height:1.2}
+.cv .meta{display:flex;justify-content:space-between;align-items:center;gap:4px}
+.tag{font-family:var(--display);font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:1px 6px;border-radius:999px;background:var(--amber);color:#2A1900}
+.tag.r{background:var(--rose);color:#22071A}
+.heat{display:inline-flex;gap:1px}
+.heat svg{width:13px;height:13px;fill:var(--line)}
+.heat svg.hot{fill:var(--rose)}
+.empty{color:var(--muted);padding:20px 0}
+
+/* brief */
+.brief{background:var(--surface);border:1.5px solid var(--line);border-top:6px solid var(--c2,var(--amber));border-radius:18px;padding:20px 16px 22px;display:grid;gap:22px}
+.b-head{display:grid;grid-template-columns:112px 1fr;gap:16px;align-items:start}
+.b-head .cover b{font-size:18px}
+.b-head h2{font-size:clamp(30px,8.4vw,60px)}
+.b-head p{margin:6px 0 0;color:var(--muted);font-size:14px}
+.buy{display:flex;flex-wrap:wrap;gap:8px}
+.buy .btn{min-height:44px;padding:10px 14px;font-size:15px}
+.reading{border:1.5px solid var(--ink);background:transparent;border-radius:12px;padding:10px 14px;font-weight:600;min-height:44px}
+.reading[aria-pressed="true"]{background:var(--rose);border-color:var(--rose);color:#22071A}
+.tropes-row{display:flex;flex-wrap:wrap;gap:6px}
+.tchip{border:1.5px solid var(--teal);color:var(--teal);background:transparent;border-radius:999px;padding:5px 11px;font-size:13px;font-weight:600;min-height:34px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.stat{border-top:2px solid var(--line);padding-top:8px;display:grid;gap:6px}
+.stat .heat svg{width:20px;height:20px}
+.split{height:12px;border-radius:999px;background:var(--violet);overflow:hidden;display:flex}
+.split i{display:block;background:var(--rose)}
+.stat small{color:var(--muted);font-size:13px}
+.block h3{font-size:24px;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.block h3 svg{width:20px;height:20px;flex:none}
+.block p{margin:0;max-width:65ch}
+.tldr{font-size:17px}
+.block ul{margin:0;padding:0;list-style:none;display:grid;gap:10px}
+.names li{display:grid;gap:1px;padding-left:12px;border-left:3px solid var(--amber)}
+.names b{font-weight:600}
+.names code{font-family:var(--display);font-size:15px;letter-spacing:.08em;color:var(--amber);font-weight:600}
+.names span{color:var(--muted);font-size:14px}
+.ask li{padding:10px 12px;background:var(--surface2);border-radius:10px;font-weight:500}
+.lines li{font-family:var(--serif);font-style:italic;font-size:24px;line-height:1.15}
+.lines li.pet{font-family:var(--body);font-style:normal;font-size:16px;line-height:1.5;padding:12px;border:1.5px dashed var(--rose);border-radius:10px}
+.lines li.pet b{font-family:var(--serif);font-style:italic;font-weight:400;font-size:24px;color:var(--rose)}
+.note{color:var(--muted);font-size:13px;margin-top:8px}
+.pair li b{display:block;font-weight:600}
+.pair li{padding-bottom:10px;border-bottom:1px solid var(--line)}
+.pair li:last-child{border-bottom:0;padding-bottom:0}
+.dont{background:var(--surface2);border-radius:12px;padding:12px 14px;margin-top:14px}
+.dont b{font-family:var(--display);text-transform:uppercase;letter-spacing:.1em;font-size:14px;color:var(--rose);display:block}
+details{border:1.5px solid var(--line);border-radius:12px;padding:12px 14px}
+summary{font-weight:600;cursor:pointer}
+details p{margin:10px 0 0;max-width:65ch}
+.two{display:grid;gap:22px}
+.recs{display:grid;gap:10px}
+.rec{display:grid;grid-template-columns:64px 1fr;gap:12px;align-items:center;background:var(--surface2);border:0;border-radius:12px;padding:10px;text-align:left}
+.rec .cover{padding:6px 5px;border-radius:4px 6px 6px 4px}
+.rec .cover b{font-size:10px}
+.rec .cover small,.rec .cover svg{display:none}
+.rec strong{display:block}
+.rec span{color:#D3C9E4;font-size:14px}
+
+/* moves */
+.moves{display:grid;gap:14px}
+.move{background:var(--surface);border:1.5px solid var(--line);border-radius:18px;overflow:hidden;display:grid;align-content:start}
+.move svg.dia{width:100%;height:auto;display:block;background:radial-gradient(120% 90% at 50% 100%,#3A2470 0%,#1D1538 70%)}
+.move .body{padding:14px 16px 18px;display:grid;gap:10px}
+.move h3{font-size:28px;color:var(--violet)}
+.move .where{color:var(--muted);font-size:14px;margin:0}
+.move ol{margin:0;padding:0;list-style:none;display:grid;gap:8px;counter-reset:s}
+.move li{display:grid;grid-template-columns:26px 1fr;gap:8px;counter-increment:s}
+.move li::before{content:counter(s);width:24px;height:24px;border-radius:50%;background:var(--amber);color:#2A1900;font-weight:700;font-size:13px;display:grid;place-items:center}
+.say{font-family:var(--serif);font-style:italic;font-size:24px;line-height:1.1;margin:0}
+.say small{display:block;font-family:var(--display);font-style:normal;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--rose)}
+
+/* tropes */
+.tropes{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.trope{background:var(--surface);border:1.5px solid var(--line);border-left:6px solid var(--tc);border-radius:14px;padding:14px;display:grid;gap:8px;align-content:start}
+.trope h3{font-size:24px;color:var(--tc)}
+.trope p{margin:0;font-size:15px}
+.trope p.why{color:var(--muted);font-size:14px}
+.trope button{justify-self:start;border:1.5px solid var(--tc);background:transparent;border-radius:999px;padding:6px 12px;font-weight:600;font-size:13px;min-height:36px;color:var(--tc)}
+
+footer{padding:40px 0 48px;color:var(--muted);font-size:14px}
+footer p{max-width:65ch;margin:0 0 8px}
+@media (min-width:760px){
+  .hero{min-height:640px}
+  .deckgrid{grid-template-columns:300px 1fr;gap:24px}
+  .shelf{grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:22px 16px}
+  .two{grid-template-columns:1fr 1fr}
+  .brief{padding:28px}
+  .b-head{grid-template-columns:160px 1fr;gap:24px}
+  .moves{grid-template-columns:1fr 1fr}
+  .recs{grid-template-columns:repeat(3,1fr)}
+  .filters{grid-template-columns:1fr 220px}
+  .filters .chips{grid-column:1/-1}
+}
+@media (min-width:1000px){.moves{grid-template-columns:repeat(3,1fr)}}
+@media (prefers-reduced-motion:reduce){.deal.flip .inner{animation:none}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<header class="hero">
+  <canvas id="sky" aria-hidden="true"></canvas>
+  <video id="heroVid" muted loop playsinline autoplay aria-hidden="true"></video>
+  <div class="wrap">
+    <div class="top">
+      <div class="mark">Well <i>Read</i></div>
+      <nav class="nav"><a href="#shelf">Shelf</a><a href="#moves">Moves</a><a href="#tropes">Tropes</a></nav>
+    </div>
+    <div class="hero-copy">
+      <h1>She is 400 pages deep. <em>Catch up in four minutes.</em></h1>
+      <p>Find the book she is reading. Get the short version, the names to say right, a question for dinner, a move to try and the next book to buy her.</p>
+      <div class="cta"><a class="btn" href="#deck">Deal me something</a><a class="btn ghost" href="#shelf">Find her book</a></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <section id="deck" style="--c:var(--rose)">
+    <div class="sec-head"><h2>The <span>deck</span></h2><p>No time to read anything? Draw a card and do what it says.</p></div>
+    <div class="deckgrid">
+      <div class="controls">
+        <div class="label">Deal me</div>
+        <div class="chips" id="kinds"></div>
+        <label class="label" for="scope">From</label>
+        <select id="scope"></select>
+      </div>
+      <div class="deal" id="deal" aria-live="polite"><div class="inner" id="dealInner"></div></div>
+    </div>
+  </section>
+
+  <section id="shelf" style="--c:var(--amber)">
+    <div class="sec-head"><h2>Her <span>shelf</span></h2><p id="shelfCount"></p></div>
+    <div class="filters">
+      <input type="search" id="q" placeholder="Search a title or author" aria-label="Search a title or author">
+      <select id="tropeSel" aria-label="Filter by trope"></select>
+      <div class="chips" id="genres"></div>
+    </div>
+    <div class="shelf" id="tiles"></div>
+  </section>
+
+  <section id="brief-anchor">
+    <div class="brief" id="brief"></div>
+  </section>
+
+  <section id="moves" style="--c:var(--violet)">
+    <div class="sec-head"><h2>The <span>moves</span></h2><p>These books run on body language. Six moves show up in almost every one of them. Here is where everything goes and what to say.</p></div>
+    <div class="moves" id="moveGrid"></div>
+  </section>
+
+  <section id="tropes" style="--c:var(--teal)">
+    <div class="sec-head"><h2>Trope <span>school</span></h2><p>A trope is a story setup readers ask for by name. Learn these and you can follow any conversation about any book on the shelf.</p></div>
+    <div class="tropes" id="tropeGrid"></div>
+  </section>
+
+  <footer>
+    <p><strong>House rules.</strong> Everything here is an invitation, never a script. Ask first, let her steer, and if she laughs at you, you are still winning.</p>
+    <p>Summaries are original and spoiler-light until you open the twist. Lines are written in the spirit of each book and are not quotations. Cover images load from Open Library where the site is hosted on the open web. Buy links open a store search. Series details checked November 2026.</p>
+  </footer>
+</div>
+
+<script src="books.js"></script>
+<script>
+var ICON = {
+  line:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H10l-5 4v-4H4z"/></svg>',
+  topic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.6 2.2c-.7.4-1.1 1-1.1 1.8M12 17h.01"/></svg>',
+  scene:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c1.5 4 5 6 5 10a5 5 0 0 1-10 0c0-2 1-3.5 2.2-4.6.2 1.6 1.300 2.100 2.300 2.100C10.500 8.500 11 5.500 12 3z"/></svg>',
+  role:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6c3 1.500 6 1.500 9 0 3 1.500 6 1.500 9 0v6c0 4-4 7-9 7s-9-3-9-7z"/><path d="M8 11h.01M16 11h.01M9 15c2 1 4 1 6 0"/></svg>',
+  move:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="5" r="2.500"/><circle cx="17" cy="6" r="2.500"/><path d="M8 8v7l-2 6M8 15l2 6M8 10l5 2M17 9v6l-2 6M17 15l2 6M17 11l-4 1"/></svg>'
+};
+var KIND = {
+  line:{name:"A line", label:"Say this", color:"#FF5C8A"},
+  topic:{name:"A topic", label:"Ask her this", color:"#FFB547"},
+  scene:{name:"A scene", label:"The scene she is thinking about", color:"#3FD0B6"},
+  role:{name:"A role", label:"Tonight", color:"#FF8A5C"},
+  move:{name:"A move", label:"Try this move", color:"#A98BFF"}
+};
+function crest(id){return CREST[id]?'<svg class="crest" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+CREST[id]+'</svg>':'';}
+function heat(n){var s='<span class="heat" role="img" aria-label="Heat '+n+' of 5">';for(var i=1;i<=5;i++){s+='<svg viewBox="0 0 16 16" class="'+(i<=n?'hot':'')+'" aria-hidden="true"><path d="M8 1c1 3 4 5 4 9a4 4 0 0 1-8 0c0-2 1-3 2-4 0 2 1 2 2 2-1-2-1-5 0-7z"/></svg>';}return s+'</span>';}
+var HEATWORD=["","Closed door","Mild","Open door","Very open door","Clear your evening"];
+
+var TROPES = {
+  etl:["Enemies to lovers","They start out wanting each other dead, or at least fired. The fun is watching the hate run out of excuses.","Every argument doubles as flirting, and the payoff feels earned.","#FF5C8A"],
+  mates:["Fated mates","Magic, biology or destiny has decided these two belong together. The story is them catching up to it.","Total certainty. He is never going to wonder if she is the one.","#A98BFF"],
+  bed:["One bed","A storm, a full inn, a mix-up. Two people who are not together yet have to share.","Forced closeness with a built-in excuse. Nobody had to make the first move.","#FFB547"],
+  slow:["Slow burn","Hundreds of pages of glances and almosts before anything happens. Sometimes whole books.","Anticipation. A hand brushing a hand can carry a chapter.","#3FD0B6"],
+  prox:["Forced proximity","Roommates, shared missions, bodyguard duty, being chained together. They cannot get away from each other.","Small domestic moments. Who makes the coffee starts to matter.","#5CA8FF"],
+  touch:["Touch her and die","He is calm about everything except someone hurting her. Then he is very much not calm.","Being someone's one exception. Protection without being asked.","#FF8A5C"],
+  who:["Who did this to you?","She shows up hurt. He goes quiet, looks at the injury and asks one question in a low voice.","He notices, and he takes it personally.","#FF5C8A"],
+  shadow:["Shadow daddy","The dark, powerful, older love interest, often with literal shadow magic. Brooding in public, soft for her in private.","All that power, and he uses it to hold her bag.","#A98BFF"],
+  grey:["Morally grey","He has done bad things for reasons that almost hold up. Not a hero, not quite a villain.","He would never hurt her, and that line is the whole appeal.","#AEA3C4"],
+  found:["Found family","A crew of misfits who choose each other. Often funnier and warmer than the romance.","Belonging. Readers often love the friends as much as the couple.","#FFB547"],
+  first:["He falls first","He is gone for her long before she notices, and usually harder.","Being wanted first, and patiently.","#FF8A5C"],
+  grump:["Grumpy and sunshine","One of them is a storm cloud. The other is relentlessly cheerful. Sunshine wins.","He is rude to everyone on earth except her.","#FFB547"],
+  marriage:["Marriage of convenience","Married for an alliance, a treaty or a scheme. The feelings arrive late and at a bad time.","Commitment first, courtship second. Husband is already the job title.","#3FD0B6"],
+  hidden:["Hidden identity","Someone is not who they claim to be: a lost heir, a spy, a prince in disguise, a pen pal.","The reader knows before she does and gets to wait for the explosion.","#5CA8FF"],
+  trials:["Deadly trials","A tournament, an academy or a game where losing means dying. Alliances are risky.","High stakes make every small kindness enormous.","#FF5C8A"],
+  fake:["Fake dating","They pretend to be together for a practical reason. The pretending stops being pretend.","All the couple behavior, with deniability.","#3FD0B6"],
+  dark:["Dark romance","Heavier material: captivity, war, cruelty, damaged people. Not for every reader.","Catharsis and intensity. Ask her about content warnings before you gift one.","#AEA3C4"]
+};
+
+var EXTRA = {
+  "fourth-wing":{tr:["etl","trials","prox","shadow","found"]},
+  "acotar":{tr:["mates","shadow","bed","found","touch"]},
+  "throne-of-glass":{tr:["slow","hidden","found","mates"]},
+  "crescent-city":{tr:["prox","mates","found","slow"]},
+  "blood-and-ash":{tr:["hidden","etl","mates","touch"]},
+  "quicksilver":{tr:["etl","mates","shadow","prox"]},
+  "serpent":{tr:["trials","etl","prox","grey"]},
+  "moon-hatched":{tr:["mates","first","slow","hidden"]},
+  "bridge-kingdom":{tr:["marriage","etl","hidden","first"]}
+};
+/* id, title, author, heat, genre, tropes, one-liner */
+var QUICK = [
+["shield-of-sparrows","Shield of Sparrows","Devney Perry",3,"f",["marriage","slow","hidden","etl"],"The overlooked princess gets married off in her sister's place to a kingdom that hunts monsters, and keeps running into its infuriating Guardian."],
+["fate-inked","A Fate Inked in Blood","Danielle L. Jensen",4,"f",["marriage","prox","touch"],"Viking-flavored. A woman with a goddess's blood is claimed as a jarl's wife and guarded by his son, which is the problem."],
+["alchemised","Alchemised","SenLinYu",3,"f",["dark","etl","prox","grey"],"After a lost war, a healer with missing memories is held captive by the enemy's most feared necromancer. Bleak, huge, obsessively loved."],
+["rose-in-chains","Rose in Chains","Julie Soto",3,"f",["dark","etl","prox","hidden"],"A captured heir is auctioned to the enemy and bought by a boy she knew at school. Dark and tense."],
+["one-dark-window","One Dark Window","Rachel Gillig",2,"f",["slow","grey","prox","fake"],"Gothic and foggy. A girl with a monster living in her head joins a highwayman to hunt enchanted cards."],
+["knight-moth","The Knight and the Moth","Rachel Gillig",2,"f",["slow","etl","found"],"A cloistered prophetess and a rude, faithless knight go looking for her missing sisters."],
+["everflame","Spark of the Everflame","Penn Cole",3,"f",["slow","hidden","etl","touch"],"A mortal healer with a secret gets pulled into the world of the immortals who rule her. Slow build, big payoff later."],
+["wicked","Kingdom of the Wicked","Kerri Maniscalco",2,"f",["etl","grey","slow"],"A Sicilian witch summons a prince of Hell to avenge her twin sister. Food descriptions will make you hungry."],
+["zodiac","Zodiac Academy","Caroline Peckham and Susanne Valenti",4,"f",["etl","grey","slow"],"Twin sisters learn they are fae royalty and get thrown into an academy where four powerful heirs want them gone. Long and addictive."],
+["powerless","Powerless","Lauren Roberts",2,"f",["trials","etl","hidden","slow"],"A girl with no powers fakes her way through deadly trials while the prince whose job is hunting people like her falls for her."],
+["divine-rivals","Divine Rivals","Rebecca Ross",1,"f",["etl","slow","hidden"],"Rival young journalists, a war between gods and magic typewriters that deliver anonymous letters. Sweet and sad."],
+["cruel-prince","The Cruel Prince","Holly Black",1,"f",["etl","grey","marriage"],"A human girl raised in Faerie schemes her way to power and tangles with the cruelest prince at court."],
+["shatter-me","Shatter Me","Tahereh Mafi",2,"f",["grey","first","touch"],"A girl whose touch can kill is locked away until a young commander decides she is a weapon. Ask her about Warner."],
+["gild","Gild","Raven Kennedy",3,"f",["grey","shadow","slow","dark"],"The King Midas myth from the point of view of the golden woman he keeps in a cage. Gets darker and better as it goes."],
+["lightlark","Lightlark","Alex Aster",2,"f",["trials","hidden","grey"],"Six cursed rulers meet on an island once a century for a game where one of them has to die."],
+["heartless-hunter","Heartless Hunter","Kristen Ciccarelli",3,"f",["etl","hidden","fake"],"A witch hiding as a shallow socialite courts the witch hunter trying to catch her. Each plans to use the other."],
+["broken-heart","Once Upon a Broken Heart","Stephanie Garber",1,"f",["grey","slow"],"A heartbroken girl makes a deal with a dangerous immortal whose kiss is fatal. Fairy-tale pretty."],
+["assistant-villain","Assistant to the Villain","Hannah Nicole Maehrer",2,"f",["grump","slow","grey"],"An office comedy where a cheerful young woman takes a job as assistant to the kingdom's evil overlord. Light and funny."],
+["bride","Bride","Ali Hazelwood",4,"f",["marriage","mates","first","prox"],"A vampire is married off to a werewolf alpha to keep the peace. He acts like he cannot stand her. He can."],
+["no-worlds","Daughter of No Worlds","Carissa Broadbent",3,"f",["slow","grump","found","prox"],"A woman who bought her own freedom trains under a grumpy hermit wizard so she can go back for the people she left."],
+["phantasma","Phantasma","Kaylie Smith",4,"f",["trials","prox","grey"],"A necromancer enters a deadly haunted-mansion contest and makes a bargain with a phantom who offers to help."],
+["wren","The Wren in the Holly Library","K.A. Linde",3,"f",["prox","grey","found"],"A thief in a monster-run New York breaks into the wrong library and ends up doing a heist with its owner."],
+["icebreaker","Icebreaker","Hannah Grace",4,"c",["prox","first","found"],"A competitive figure skater and a hockey captain are forced to share a rink. He is a golden retriever in skates."],
+["heated-rivalry","Heated Rivalry","Rachel Reid",4,"c",["etl","slow","hidden"],"Two rival pro hockey stars keep a secret going for years. Two men, a hit TV show and a huge fan base."],
+["love-hypothesis","The Love Hypothesis","Ali Hazelwood",3,"c",["fake","grump","first"],"A grad student fake dates the most feared professor in her department. The modern fake-dating standard."],
+["it-ends","It Ends with Us","Colleen Hoover",3,"c",[],"A florist falls for a surgeon as her first love comes back into her life. It is really about leaving an abusive relationship, so tread gently."],
+["twisted-love","Twisted Love","Ana Huang",4,"c",["grump","grey","touch","prox"],"Her brother's cold, rich best friend is asked to look after her. He takes the job very seriously."],
+["never-got-over","Things We Never Got Over","Lucy Score",4,"c",["grump","prox","found"],"A runaway bride gets stranded in a small town with a surprise niece and a bearded grump who keeps showing up to help."],
+["book-lovers","Book Lovers","Emily Henry",3,"c",["etl","slow"],"A sharp literary agent keeps running into her editor nemesis in a tiny town. Witty, grown-up, low drama."]
+];
+var RECS = {
+  "fourth-wing":[["quicksilver","Same snark and fighting, with fae and swords in place of dragons."],["shield-of-sparrows","Monsters, a kingdom at war and a slow build with a man she cannot stand."],["fate-inked","A fighter heroine with rare magic and a lot more heat."]],
+  "acotar":[["serpent","Another dark court, another love interest who is not what he seems."],["everflame","Readers call it the closest thing to the ACOTAR feeling."],["wicked","A demon prince, a bargain and plenty of banter."]],
+  "throne-of-glass":[["no-worlds","A driven heroine, a long war and a romance that takes its time."],["cruel-prince","Court scheming and a heroine who wants power more than a boyfriend."],["powerless","Trials, knives and a prince, in a quicker read."]],
+  "crescent-city":[["wren","City fantasy with monsters, a heist and a sharp-mouthed lead."],["bride","Modern setting, vampires and wolves, fated mates."],["zodiac","Very long, very dramatic and impossible to put down."]],
+  "blood-and-ash":[["fate-inked","Forbidden guard romance and a high heat level."],["everflame","A sheltered heroine finds out everything she was told is wrong."],["wicked","A bickering couple and a prince with secrets."]],
+  "quicksilver":[["moon-hatched","Big strange world, a gruff hero and fated mates."],["shield-of-sparrows","Enemies who snipe at each other across a monster-filled kingdom."],["phantasma","A dangerous game and a very spicy bargain."]],
+  "serpent":[["no-worlds","Same author, same emotional gut punches."],["one-dark-window","Dark, moody and built around a secret that could get her killed."],["bride","Vampire politics and a marriage neither side chose."]],
+  "moon-hatched":[["knight-moth","Lyrical writing and a strange, lovely world."],["quicksilver","Easier going, and it scratches the same fated mates itch."],["alchemised","Lost memories and devotion, much darker. Check content warnings first."]],
+  "bridge-kingdom":[["fate-inked","Same author, more magic, more heat."],["heartless-hunter","Two people spying on each other while falling in love."],["shield-of-sparrows","Another arranged royal marriage in a dangerous kingdom."]]
+};
+var PAL=[["#7A1E2C","#FF7A45"],["#2B1B6B","#9D7BFF"],["#0F4C5C","#3FD0B6"],["#6B1B4E","#FF5C8A"],["#5A3B0A","#FFB547"],["#1B3A6B","#5CA8FF"]];
+
+BOOKS.forEach(function(b){b.full=true;b.genre="f";b.tr=EXTRA[b.id].tr;});
+QUICK.forEach(function(q){BOOKS.push({id:q[0],t:q[1],a:q[2],heat:q[3],genre:q[4],tr:q[5],tldr:q[6],full:false});});
+var byId={}; BOOKS.forEach(function(b,i){byId[b.id]=b;b.c=PAL[i%PAL.length];});
+
+/* the moves: side-view figures. J = [head, shoulder, hip, knee, foot, foot2, [armA elbow, hand], [armB elbow, hand]] */
+var HER="#FF5C8A", HIM="#FFB547";
+function fig(j,col){
+  var p=function(a){return a[0]+" "+a[1];}, s='<g stroke="'+col+'" fill="none" stroke-linecap="round" stroke-linejoin="round">';
+  s+='<path stroke-width="9" d="M'+p(j.hip)+'L'+p(j.k1)+'L'+p(j.f1)+'M'+p(j.hip)+'L'+p(j.k2)+'L'+p(j.f2)+'"/>';
+  s+='<path stroke-width="15" d="M'+p(j.sh)+'L'+p(j.hip)+'"/>';
+  j.arms.forEach(function(a){s+='<path stroke-width="7" d="M'+p(j.sh)+'L'+p(a[0])+'L'+p(a[1])+'"/>';});
+  s+='</g><circle cx="'+j.head[0]+'" cy="'+j.head[1]+'" r="10" fill="'+col+'"/>';
+  return s;
+}
+function pin(n,x,y){return '<circle cx="'+x+'" cy="'+y+'" r="9" fill="#120E1F" stroke="#FFB547" stroke-width="2"/><text x="'+x+'" y="'+(y+4)+'" text-anchor="middle" font-size="11" font-weight="700" fill="#FFB547" font-family="sans-serif">'+n+'</text>';}
+var GROUND='<path d="M10 190H230" stroke="#5A4A8A" stroke-width="2" stroke-linecap="round"/>';
+var MOVES=[
+{id:"lean",t:"The lean",where:"Walls and doorframes, in nearly every book on the shelf.",
+ steps:["Forearm on the wall above her shoulder. One arm only.","Stop a hand's width away. She closes the gap or she does not.","Leave one side open so she can walk off whenever she likes."],say:"Tell me to move and I will.",
+ art:'<path d="M46 20V190" stroke="#5A4A8A" stroke-width="6" stroke-linecap="round"/>'+
+  fig({head:[66,70],sh:[64,90],hip:[64,134],k1:[66,162],f1:[64,188],k2:[70,162],f2:[74,188],arms:[[[70,110],[76,126]]]},HER)+
+  fig({head:[104,56],sh:[110,78],hip:[122,130],k1:[120,160],f1:[114,188],k2:[130,160],f2:[136,188],arms:[[[84,56],[52,44]],[[122,102],[120,124]]]},HIM)+
+  pin(1,52,28)+pin(2,88,96)+pin(3,84,172)},
+{id:"chin",t:"The chin tilt",where:"The standard move right before a first kiss or a hard truth.",
+ steps:["Two fingers under her chin. A lift, never a grip.","Raise it until she is looking at you.","Hold her eyes one breath longer than feels comfortable."],say:"Look at me. There you are.",
+ art:fig({head:[98,72],sh:[96,92],hip:[96,136],k1:[98,164],f1:[96,188],k2:[102,164],f2:[106,188],arms:[[[98,112],[100,130]]]},HER)+
+  fig({head:[142,58],sh:[144,80],hip:[146,132],k1:[144,162],f1:[140,188],k2:[150,162],f2:[156,188],arms:[[[128,98],[110,84]],[[150,104],[150,126]]]},HIM)+
+  pin(1,112,100)+pin(2,84,60)+pin(3,120,44)},
+{id:"forehead",t:"The forehead rest",where:"After the battle, after the fight, after any long day apart.",
+ steps:["Both hands at her jaw, thumbs on her cheeks.","Rest your forehead on hers and stop talking.","Count to five before either of you says anything."],say:"I have you.",
+ art:fig({head:[108,70],sh:[102,90],hip:[98,136],k1:[100,164],f1:[98,188],k2:[104,164],f2:[108,188],arms:[[[114,108],[128,100]]]},HER)+
+  fig({head:[127,63],sh:[138,82],hip:[146,132],k1:[144,162],f1:[140,188],k2:[152,162],f2:[158,188],arms:[[[130,100],[114,80]]]},HIM)+
+  pin(1,104,48)+pin(2,128,42)+pin(3,172,70)},
+{id:"kneel",t:"The kneel",where:"Powerful men kneeling for exactly one person is a pillar of the genre.",
+ steps:["Go down on one knee in front of her.","Tie the lace, fix the strap, zip the boot.","Look up at her before you stand."],say:"Hold still. I have it.",
+ art:fig({head:[92,58],sh:[92,78],hip:[92,130],k1:[94,160],f1:[92,188],k2:[98,160],f2:[104,188],arms:[[[108,96],[128,112]]]},HER)+
+  fig({head:[138,100],sh:[140,120],hip:[152,160],k1:[128,160],f1:[128,188],k2:[164,186],f2:[188,186],arms:[[[126,146],[108,176]]]},HIM)+
+  pin(1,176,160)+pin(2,112,160)+pin(3,146,78)},
+{id:"carry",t:"The carry",where:"She is hurt, exhausted or just barefoot. He does not ask twice.",
+ steps:["One arm behind her back, one under her knees.","Lift with your legs. Her arm goes around your neck.","Walk like it weighs nothing. Set her down gently."],say:"You have walked enough today.",
+ art:fig({head:[128,48],sh:[128,70],hip:[128,126],k1:[126,158],f1:[122,188],k2:[134,158],f2:[140,188],arms:[[[110,96],[98,104]],[[140,100],[156,106]]]},HIM)+
+  fig({head:[88,80],sh:[98,90],hip:[136,104],k1:[160,96],f1:[168,124],k2:[162,98],f2:[172,122],arms:[[[112,74],[128,66]]]},HER)+
+  pin(1,84,116)+pin(2,150,54)+pin(3,186,170)},
+{id:"back",t:"The hand on the back",where:"Through every door, across every crowded ballroom.",
+ steps:["Open palm at the small of her back.","Guide, never push. Stay half a step behind her.","Take the hand away once she is through the door."],say:"After you.",
+ art:'<path d="M176 190V36H222V190" stroke="#5A4A8A" stroke-width="5" fill="none" stroke-linejoin="round"/>'+
+  fig({head:[86,56],sh:[84,78],hip:[84,130],k1:[90,160],f1:[84,188],k2:[80,160],f2:[94,188],arms:[[[100,100],[116,114]]]},HIM)+
+  fig({head:[130,70],sh:[128,90],hip:[128,134],k1:[136,162],f1:[130,188],k2:[124,162],f2:[142,188],arms:[[[136,108],[146,122]]]},HER)+
+  pin(1,112,134)+pin(2,62,104)+pin(3,198,22)}
+];
+
+/* deck */
+var DECK=[];
+BOOKS.forEach(function(b){
+  if(!b.full) return;
+  if(b.pet[0].indexOf("No pet")<0) DECK.push({k:"line",b:b.id,text:b.pet[0],how:b.pet[1],serif:true});
+  b.lines.forEach(function(l){DECK.push({k:"line",b:b.id,text:l,how:"Written in the spirit of the book. Say it like you mean it, then go back to what you were doing.",serif:true});});
+  b.ask.forEach(function(q){DECK.push({k:"topic",b:b.id,text:q,how:"Ask it, then listen. Follow up with 'why?' and you are set for twenty minutes."});});
+  b.scenes.forEach(function(s){DECK.push({k:"scene",b:b.id,text:s[0],how:s[1]});});
+  b.roles.forEach(function(r){DECK.push({k:"role",b:b.id,text:r[0],how:r[1]});});
+});
+MOVES.forEach(function(m){DECK.push({k:"move",m:m.id,text:m.t,how:m.steps.join(" ")+" Say: '"+m.say+"'"});});
+
+var state={kind:"any",scope:"all",current:null,last:-1,genre:"all",trope:"",q:""};
+function loadJ(k,d){try{return JSON.parse(localStorage.getItem(k))||d;}catch(e){return d;}}
+function saveJ(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+var shelf=loadJ("wr-shelf",[]).filter(function(id){return byId[id];});
+var COVERS=loadJ("wr-covers",{});
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+
+/* covers: real art from Open Library when the page can reach it, a typeset cover when it cannot */
+function coverHTML(b){
+  var img=COVERS[b.id]?'<img src="https://covers.openlibrary.org/b/id/'+COVERS[b.id]+'-M.jpg" alt="Cover of '+esc(b.t)+'" loading="lazy" onerror="this.remove()">':'';
+  return '<span class="cover" data-cover="'+b.id+'" style="--c1:'+b.c[0]+';--c2:'+b.c[1]+'"><b>'+esc(b.t)+'</b>'+crest(b.id)+'<small>'+esc(b.a)+'</small>'+img+'</span>';
+}
+function fetchCovers(){
+  if(!window.fetch) return;
+  var todo=BOOKS.filter(function(b){return !COVERS[b.id];}), n=0;
+  function next(){
+    var b=todo.shift(); if(!b) return;
+    fetch("https://openlibrary.org/search.json?limit=1&fields=cover_i&title="+encodeURIComponent(b.t)+"&author="+encodeURIComponent(b.a.split(" and ")[0]))
+     .then(function(r){return r.json();})
+     .then(function(d){
+        var c=d&&d.docs&&d.docs[0]&&d.docs[0].cover_i; if(!c) return;
+        COVERS[b.id]=c; saveJ("wr-covers",COVERS);
+        document.querySelectorAll('[data-cover="'+b.id+'"]').forEach(function(el){
+          if(el.querySelector("img")) return;
+          var im=new Image(); im.alt="Cover of "+b.t; im.onerror=function(){im.remove();}; im.src="https://covers.openlibrary.org/b/id/"+c+"-M.jpg"; el.appendChild(im);
+        });
+     }).catch(function(){ if(++n>2) todo.length=0; }).then(next);
+  }
+  next(); next(); next();
+}
+function buyHTML(b){
+  var q=encodeURIComponent(b.t+" "+b.a);
+  return '<div class="buy"><a class="btn amber" target="_blank" rel="noopener" href="https://www.amazon.com/s?k='+q+'">Buy on Amazon</a><a class="btn ghost" target="_blank" rel="noopener" href="https://bookshop.org/search?keywords='+q+'">Buy on Bookshop</a></div>';
+}
+
+function renderKinds(){
+  var html='<button class="chip" data-k="any" aria-pressed="'+(state.kind==="any")+'">Anything</button>';
+  Object.keys(KIND).forEach(function(k){html+='<button class="chip" data-k="'+k+'" aria-pressed="'+(state.kind===k)+'">'+KIND[k].name+'</button>';});
+  document.getElementById("kinds").innerHTML=html;
+}
+function renderScope(){
+  var el=document.getElementById("scope"), html='<option value="all">Any book</option>';
+  if(shelf.length) html+='<option value="shelf">What she is reading ('+shelf.length+')</option>';
+  BOOKS.forEach(function(b){if(b.full) html+='<option value="'+b.id+'">'+esc(b.t)+'</option>';});
+  el.innerHTML=html;
+  if(state.scope==="shelf"&&!shelf.length) state.scope="all";
+  el.value=state.scope;
+}
+function pool(){
+  var out=[];
+  DECK.forEach(function(c,i){
+    if(state.kind!=="any"&&c.k!==state.kind) return;
+    if(c.k==="move"){out.push(i);return;}
+    if(state.scope==="all"||(state.scope==="shelf"&&shelf.indexOf(c.b)>=0)||c.b===state.scope) out.push(i);
+  });
+  return out;
+}
+function deal(animate){
+  var p=pool(), box=document.getElementById("deal"), inner=document.getElementById("dealInner");
+  if(!p.length){
+    box.style.setProperty("--stripe","#FFB547");
+    inner.innerHTML='<div class="kind">Nothing in that pile</div><div class="text">No cards of that kind for this pick yet.</div><div class="how">Switch to Anything, or choose a different book. Full briefs are marked on the shelf.</div>';
+    return;
+  }
+  var i=p[Math.floor(Math.random()*p.length)];
+  if(p.length>1){while(i===state.last){i=p[Math.floor(Math.random()*p.length)];}}
+  state.last=i;
+  var c=DECK[i], K=KIND[c.k], b=c.b?byId[c.b]:null;
+  box.style.setProperty("--stripe",K.color);
+  inner.innerHTML='<div class="kind">'+ICON[c.k]+K.label+'</div>'+
+    '<div class="from">'+(b?'From '+esc(b.t):'Works with any book')+'</div>'+
+    '<div class="text'+(c.serif?' serif':'')+'">'+esc(c.text)+'</div>'+
+    '<div class="how">'+esc(c.how)+'</div>'+
+    '<div class="acts"><button class="btn" id="again">Deal another</button>'+(b?'<button class="btn ghost" data-open="'+b.id+'">Open the brief</button>':'<a class="btn ghost" href="#moves">See the diagram</a>')+'</div>';
+  if(animate){box.classList.remove("flip");void box.offsetWidth;box.classList.add("flip");}
+}
+
+function renderFilters(){
+  var g=[["all","All"],["full","Full briefs"],["f","Fantasy"],["c","Contemporary"]];
+  document.getElementById("genres").innerHTML=g.map(function(x){return '<button class="chip" data-g="'+x[0]+'" aria-pressed="'+(state.genre===x[0])+'">'+x[1]+'</button>';}).join("");
+  var el=document.getElementById("tropeSel"), html='<option value="">Any trope</option>';
+  Object.keys(TROPES).forEach(function(k){html+='<option value="'+k+'">'+esc(TROPES[k][0])+'</option>';});
+  el.innerHTML=html; el.value=state.trope;
+}
+function renderTiles(){
+  var q=state.q.toLowerCase(), list=BOOKS.filter(function(b){
+    if(state.genre==="full"&&!b.full) return false;
+    if((state.genre==="f"||state.genre==="c")&&b.genre!==state.genre) return false;
+    if(state.trope&&b.tr.indexOf(state.trope)<0) return false;
+    if(q&&(b.t+" "+b.a).toLowerCase().indexOf(q)<0) return false;
+    return true;
+  });
+  document.getElementById("shelfCount").textContent=BOOKS.length+" of the biggest series and standalones on BookTok. "+BOOKS.filter(function(b){return b.full;}).length+" have a full brief. Tap a cover.";
+  document.getElementById("tiles").innerHTML=list.length?list.map(function(b){
+    return '<button class="cv" data-open="'+b.id+'" aria-current="'+(state.current===b.id)+'">'+coverHTML(b)+
+      '<span class="ttl">'+esc(b.t)+'</span><span class="meta">'+heat(b.heat)+(shelf.indexOf(b.id)>=0?'<span class="tag r">Reading</span>':(b.full?'<span class="tag">Brief</span>':''))+'</span></button>';
+  }).join(""):'<p class="empty">Nothing matches. Clear the search or pick another trope.</p>';
+}
+function h3(k,t,col){return '<h3><span style="color:'+col+';display:inline-flex">'+ICON[k]+'</span>'+t+'</h3>';}
+function recBtn(id,why){var r=byId[id];return '<button class="rec" data-open="'+id+'">'+coverHTML(r)+'<span><strong>'+esc(r.t)+'</strong><span>'+esc(why)+'</span></span></button>';}
+function renderBrief(){
+  var b=byId[state.current], on=shelf.indexOf(b.id)>=0, el=document.getElementById("brief"), html="";
+  el.style.setProperty("--c2",b.c[1]);
+  html+='<div class="b-head">'+coverHTML(b)+'<div style="display:grid;gap:12px"><div><h2>'+esc(b.t)+'</h2><p>'+esc(b.a)+(b.status?'. '+esc(b.status):'')+'</p></div>'+
+    '<div class="tropes-row">'+b.tr.map(function(k){return '<button class="tchip" data-trope="'+k+'">'+esc(TROPES[k][0])+'</button>';}).join("")+'</div></div></div>';
+  html+='<div class="buy" style="align-items:center"><button class="reading" id="reading" aria-pressed="'+on+'">'+(on?'She is reading this':'Mark as what she is reading')+'</button></div>'+buyHTML(b);
+  if(!b.full){
+    html+='<div class="stats"><div class="stat"><span class="label">Heat</span>'+heat(b.heat)+'<small>'+HEATWORD[b.heat]+'</small></div></div>';
+    html+='<div class="block"><h3>The one-line version</h3><p class="tldr">'+esc(b.tldr)+'</p><p class="note">Short entry for now. Tap a trope above to learn what she likes about it, or draw a move from the deck.</p></div>';
+    el.innerHTML=html; return;
+  }
+  html+='<div class="stats">'+
+    '<div class="stat"><span class="label">Heat</span>'+heat(b.heat)+'<small>'+HEATWORD[b.heat]+'</small></div>'+
+    '<div class="stat"><span class="label">Plot to romance</span><div class="split" role="img" aria-label="'+(100-b.rom)+' percent plot, '+b.rom+' percent romance"><span style="flex:'+(100-b.rom)+'"></span><i style="flex:'+b.rom+'"></i></div><small>'+(100-b.rom)+'% plot, '+b.rom+'% romance</small></div>'+
+    '<div class="stat"><span class="label">Commitment</span><strong>'+esc(b.size)+'</strong></div></div>';
+  html+='<div class="block"><h3>The four-minute version</h3><p class="tldr">'+esc(b.tldr)+'</p></div>';
+  html+='<div class="two">';
+  html+='<div class="block"><h3>Names to get right</h3><ul class="names">'+b.names.map(function(n){return '<li><b>'+esc(n[0])+'</b>'+(n[1]?'<code>'+esc(n[1])+'</code>':'')+'<span>'+esc(n[2])+'</span></li>';}).join("")+'</ul></div>';
+  html+='<div class="block">'+h3("topic","Ask her this","var(--amber)")+'<ul class="ask">'+b.ask.map(function(q){return '<li>'+esc(q)+'</li>';}).join("")+'</ul><div class="dont"><b>Do not say</b>"'+esc(b.dont)+'"</div></div>';
+  html+='</div>';
+  html+='<div class="block">'+h3("line","Lines to borrow","var(--rose)")+'<ul class="lines"><li class="pet"><b>'+esc(b.pet[0])+'</b><br>'+esc(b.pet[1])+'</li>'+b.lines.map(function(l){return '<li>'+esc(l)+'</li>';}).join("")+'</ul><p class="note">Pet names come from the book. The lines are written in its spirit and are not quotations.</p></div>';
+  html+='<div class="two">';
+  html+='<div class="block">'+h3("scene","Scenes she is thinking about","var(--teal)")+'<ul class="pair">'+b.scenes.map(function(s){return '<li><b>'+esc(s[0])+'</b>'+esc(s[1])+'</li>';}).join("")+'</ul></div>';
+  html+='<div class="block">'+h3("role","Tonight","#FF8A5C")+'<ul class="pair">'+b.roles.map(function(s){return '<li><b>'+esc(s[0])+'</b>'+esc(s[1])+'</li>';}).join("")+'</ul></div>';
+  html+='</div>';
+  html+='<details><summary>The twist (spoiler). Open only if she is past book one.</summary><p>'+esc(b.twist)+'</p></details>';
+  if(RECS[b.id]) html+='<div class="block"><h3>If she loved this, tell her about</h3><p class="note" style="margin:0 0 10px">Your line: "I keep hearing good things about this one. It sounds like your kind of book."</p><div class="recs">'+RECS[b.id].map(function(r){return recBtn(r[0],r[1]);}).join("")+'</div></div>';
+  el.innerHTML=html;
+}
+function showBook(id,scroll){
+  if(!byId[id]) return;
+  state.current=id; renderTiles(); renderBrief();
+  if(scroll) document.getElementById("brief-anchor").scrollIntoView({block:"start"});
+}
+function renderMoves(){
+  document.getElementById("moveGrid").innerHTML=MOVES.map(function(m){
+    return '<article class="move" id="move-'+m.id+'"><svg class="dia" viewBox="0 0 240 200" role="img" aria-label="Diagram of '+esc(m.t)+'">'+GROUND+m.art+'</svg>'+
+      '<div class="body"><h3>'+esc(m.t)+'</h3><p class="where">'+esc(m.where)+'</p><ol>'+m.steps.map(function(s){return '<li><span>'+esc(s)+'</span></li>';}).join("")+'</ol>'+
+      '<p class="say"><small>Say</small>'+esc(m.say)+'</p></div></article>';
+  }).join("");
+}
+function renderTropes(){
+  document.getElementById("tropeGrid").innerHTML=Object.keys(TROPES).map(function(k){
+    var t=TROPES[k], n=BOOKS.filter(function(b){return b.tr.indexOf(k)>=0;}).length;
+    return '<article class="trope" style="--tc:'+t[3]+'"><h3>'+esc(t[0])+'</h3><p>'+esc(t[1])+'</p><p class="why"><strong>Why she likes it:</strong> '+esc(t[2])+'</p>'+(n?'<button data-trope="'+k+'">See '+n+' book'+(n>1?'s':'')+'</button>':'')+'</article>';
+  }).join("");
+}
+
+document.addEventListener("click",function(e){
+  var t=e.target.closest("button"); if(!t) return;
+  if(t.dataset.k){state.kind=t.dataset.k;renderKinds();deal(true);return;}
+  if(t.dataset.g){state.genre=t.dataset.g;renderFilters();renderTiles();return;}
+  if(t.dataset.trope){state.trope=t.dataset.trope;state.genre="all";state.q="";document.getElementById("q").value="";renderFilters();renderTiles();document.getElementById("shelf").scrollIntoView({block:"start"});return;}
+  if(t.id==="again"){deal(true);return;}
+  if(t.dataset.open){var id=t.dataset.open; if(location.hash==="#"+id){showBook(id,true);}else{location.hash=id;} return;}
+  if(t.id==="reading"){
+    var i=shelf.indexOf(state.current); if(i>=0){shelf.splice(i,1);}else{shelf.push(state.current);}
+    saveJ("wr-shelf",shelf); renderScope(); renderTiles(); renderBrief(); return;
+  }
+});
+document.getElementById("scope").addEventListener("change",function(e){state.scope=e.target.value;deal(true);});
+document.getElementById("tropeSel").addEventListener("change",function(e){state.trope=e.target.value;renderTiles();});
+document.getElementById("q").addEventListener("input",function(e){state.q=e.target.value;renderTiles();});
+window.addEventListener("hashchange",function(){var id=location.hash.slice(1); if(byId[id]) showBook(id,true);});
+
+/* hero: a slow pan along her bookshelf at night. If a hero.mp4 sits next to this page, it plays instead. */
+(function(){
+  var cv=document.getElementById("sky"), ctx=cv.getContext("2d"), W=0,H=0,dpr=1, strip=null, S=0, lights=[], still=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var seed=7; function R(){seed=(seed*16807)%2147483647;return (seed-1)/2147483646;}
+  var CLOTH=["#5B1220","#7A1E2C","#1B2A52","#243B6B","#123C36","#1F5A4C","#3A1B4E","#57246B","#15131C","#2A2633","#8A5A14","#B07A1E","#0F4C5C","#6B1B3A","#E6DCC8","#3B2A1E","#8C2F1B","#2E1F5E"];
+  var FOIL=["#F2D48A","#EAC36A","#F6E7C1","#D9B45A","#F3EDE0"];
+  var TITLES=BOOKS.map(function(b){return [b.t,b.a.split(" and ")[0]];});
+  function shade(x,y,w,h){
+    var g=ctx2.createLinearGradient(x,0,x+w,0);
+    g.addColorStop(0,"rgba(0,0,0,.55)");g.addColorStop(.14,"rgba(0,0,0,.08)");g.addColorStop(.3,"rgba(255,255,255,.16)");g.addColorStop(.46,"rgba(255,255,255,.02)");g.addColorStop(.8,"rgba(0,0,0,.18)");g.addColorStop(1,"rgba(0,0,0,.62)");
+    ctx2.fillStyle=g;ctx2.fillRect(x,y,w,h);
+  }
+  var ctx2;
+  function spine(x,base,w,h,ti){
+    var y=base-h, col=CLOTH[Math.floor(R()*CLOTH.length)], light=col==="#E6DCC8", foil=light?"#3A2415":FOIL[Math.floor(R()*FOIL.length)];
+    ctx2.fillStyle=col;ctx2.fillRect(x,y,w,h);
+    /* cloth grain */
+    ctx2.globalAlpha=.07;ctx2.fillStyle="#fff";for(var i=0;i<h;i+=3){ctx2.fillRect(x,y+i+R()*2,w,1);}ctx2.globalAlpha=1;
+    /* foil bands */
+    var style=Math.floor(R()*4);
+    ctx2.fillStyle=foil;ctx2.globalAlpha=.9;
+    if(style!==3){ctx2.fillRect(x+2,y+h*.07,w-4,1.5);ctx2.fillRect(x+2,y+h*.93,w-4,1.5);}
+    if(style===1){ctx2.fillRect(x+2,y+h*.10,w-4,3);ctx2.fillRect(x+2,y+h*.89,w-4,3);}
+    if(style===2){ctx2.beginPath();ctx2.arc(x+w/2,y+h*.88,Math.min(w*.22,6),0,6.283);ctx2.fill();}
+    ctx2.globalAlpha=1;
+    /* title down the spine */
+    var t=TITLES[ti%TITLES.length], len=h*.66, fs=Math.min(w*.52,17);
+    ctx2.save();ctx2.translate(x+w/2,y+h*.14);ctx2.rotate(Math.PI/2);
+    ctx2.font="800 "+fs+"px 'Big Shoulders Display','Arial Narrow',sans-serif";
+    var txt=t[0].toUpperCase(), tw=ctx2.measureText(txt).width;
+    if(tw>len){fs=fs*len/tw;ctx2.font="800 "+fs+"px 'Big Shoulders Display','Arial Narrow',sans-serif";}
+    ctx2.textBaseline="middle";ctx2.fillStyle=foil;ctx2.fillText(txt,0,0);
+    if(w>30&&style!==2){ctx2.font="600 "+Math.max(6,fs*.5)+"px 'Instrument Sans',sans-serif";ctx2.globalAlpha=.8;var a=t[1].toUpperCase();ctx2.fillText(a,h*.78-ctx2.measureText(a).width,0);}
+    ctx2.restore();
+    shade(x,y,w,h);
+    /* page-block top edge and gap */
+    ctx2.fillStyle="rgba(255,240,210,.22)";ctx2.fillRect(x+1,y,w-2,1.5);
+    ctx2.fillStyle="rgba(0,0,0,.7)";ctx2.fillRect(x+w-1,y,1.5,h);
+  }
+  function build(){
+    seed=7; lights=[];
+    var rows=3, rowH=Math.max(170,H/2.45), plank=13; S=Math.max(1500,Math.ceil(W*1.8));
+    strip=document.createElement("canvas");strip.width=S*dpr;strip.height=H*dpr;ctx2=strip.getContext("2d");ctx2.setTransform(dpr,0,0,dpr,0,0);
+    ctx2.fillStyle="#0B0710";ctx2.fillRect(0,0,S,H);
+    var ti=0;
+    for(var r=0;r<rows;r++){
+      var top=r*rowH, base=top+rowH-plank;
+      var bg=ctx2.createLinearGradient(0,top,0,base);bg.addColorStop(0,"#07040A");bg.addColorStop(1,"#1D120F");ctx2.fillStyle=bg;ctx2.fillRect(0,top,S,rowH);
+      var x=0;
+      while(x<S){
+        var w=24+R()*26, h=(rowH-plank)*(.66+R()*.26);
+        if(S-x<60){w=S-x;}
+        if(R()<.09&&S-x>130){
+          /* a flat stack */
+          var sw=84+R()*30, sy=base;
+          for(var k=0;k<3+Math.floor(R()*2);k++){var th=16+R()*10;ctx2.save();ctx2.translate(x+6,sy);ctx2.rotate(-Math.PI/2);spine(0,sw-R()*10,th,sw-R()*14,ti++);ctx2.restore();sy-=th;}
+          x+=sw+10;continue;
+        }
+        spine(x,base,w,h,ti++); x+=w;
+      }
+      /* shadow under the shelf above, then the plank */
+      var sh=ctx2.createLinearGradient(0,top,0,top+rowH*.5);sh.addColorStop(0,"rgba(0,0,0,.85)");sh.addColorStop(1,"rgba(0,0,0,0)");ctx2.fillStyle=sh;ctx2.fillRect(0,top,S,rowH*.5);
+      var pg=ctx2.createLinearGradient(0,base,0,base+plank);pg.addColorStop(0,"#8A5A33");pg.addColorStop(.18,"#5B3920");pg.addColorStop(1,"#22130B");ctx2.fillStyle=pg;ctx2.fillRect(0,base,S,plank);
+      ctx2.globalAlpha=.25;ctx2.strokeStyle="#2A160B";for(var gx=0;gx<S;gx+=5+R()*22){ctx2.beginPath();ctx2.moveTo(gx,base+2+R()*9);ctx2.lineTo(gx+20+R()*60,base+2+R()*9);ctx2.stroke();}ctx2.globalAlpha=1;
+      /* fairy light wire hanging off the plank above */
+      if(r<2){
+        ctx2.strokeStyle="rgba(20,14,10,.9)";ctx2.lineWidth=1;ctx2.beginPath();
+        var n=Math.round(S/120);
+        for(var i=0;i<=n;i++){var x0=i*S/n,x1=(i+1)*S/n,yy=top+4;ctx2.moveTo(x0,yy);ctx2.quadraticCurveTo((x0+x1)/2,yy+26,x1,yy);
+          if(i<n){lights.push([x0+S/n*.28,yy+11,R()*6.28]);lights.push([x0+S/n*.72,yy+11,R()*6.28]);}}
+        ctx2.stroke();
+      }
+    }
+  }
+  var motes=[];for(var i=0;i<40;i++)motes.push([Math.random(),Math.random(),Math.random()*.6+.3,Math.random()*6.28]);
+  function size(){dpr=Math.min(window.devicePixelRatio||1,2);W=cv.clientWidth;H=cv.clientHeight;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);build();}
+  function frame(ms){
+    var t=ms/1000, off=(t*11)%S, i;
+    ctx.globalCompositeOperation="source-over";
+    ctx.drawImage(strip,-off,0,S,H);ctx.drawImage(strip,S-off,0,S,H);
+    /* candle warmth from the right, with flicker */
+    var fl=.82+.1*Math.sin(t*7.3)+.06*Math.sin(t*13.1+1), cx=W*.86, cy=H*.34;
+    ctx.globalCompositeOperation="multiply";
+    var v=ctx.createRadialGradient(cx,cy,H*.1,cx,cy,Math.max(W,H)*1.05);v.addColorStop(0,"#FFE2B0");v.addColorStop(.45,"#B47A66");v.addColorStop(1,"#4A3050");ctx.fillStyle=v;ctx.fillRect(0,0,W,H);
+    ctx.globalCompositeOperation="lighter";
+    var c=ctx.createRadialGradient(cx,cy,0,cx,cy,H*.75);c.addColorStop(0,"rgba(255,170,80,"+(.30*fl)+")");c.addColorStop(1,"rgba(255,170,80,0)");ctx.fillStyle=c;ctx.fillRect(0,0,W,H);
+    /* fairy lights */
+    for(i=0;i<lights.length;i++){
+      var L=lights[i], x=((L[0]-off)%S+S)%S; if(x>W+40){x-=S;} if(x<-40||x>W+40) continue;
+      var tw=.7+.3*Math.sin(t*1.7+L[2]), g=ctx.createRadialGradient(x,L[1],0,x,L[1],30);
+      g.addColorStop(0,"rgba(255,214,140,"+(.85*tw)+")");g.addColorStop(.18,"rgba(255,170,80,"+(.35*tw)+")");g.addColorStop(1,"rgba(255,150,60,0)");
+      ctx.fillStyle=g;ctx.fillRect(x-30,L[1]-30,60,60);
+    }
+    /* out-of-focus glints and dust near the lens */
+    for(i=0;i<motes.length;i++){var m=motes[i],big=i<7,mx=((m[0]*W+t*(big?9:4)*m[2])%W+W)%W,my=((m[1]*H+Math.sin(t*.3+m[3])*14-t*3*m[2])%H+H)%H,rr=big?26+m[2]*30:1+m[2];
+      if(big){var bg2=ctx.createRadialGradient(mx,my,0,mx,my,rr);bg2.addColorStop(0,"rgba(255,190,120,.10)");bg2.addColorStop(.8,"rgba(255,150,170,.06)");bg2.addColorStop(1,"rgba(255,150,170,0)");ctx.fillStyle=bg2;ctx.fillRect(mx-rr,my-rr,rr*2,rr*2);}
+      else{ctx.fillStyle="rgba(255,225,180,"+(.25+.25*Math.sin(t+m[3]))+")";ctx.fillRect(mx,my,rr,rr);}}
+    ctx.globalCompositeOperation="source-over";
+    if(!still) requestAnimationFrame(frame);
+  }
+  size();
+  var rt;window.addEventListener("resize",function(){clearTimeout(rt);rt=setTimeout(function(){size();if(still)frame(3000);},150);});
+  if(document.fonts&&document.fonts.ready){document.fonts.ready.then(function(){build();if(still)frame(3000);});}
+  if(still) frame(3000); else requestAnimationFrame(frame);
+  /* optional real footage */
+  var vid=document.getElementById("heroVid");
+  if(vid&&location.protocol.indexOf("http")===0&&!/claude/.test(location.hostname)){vid.addEventListener("canplay",function(){vid.classList.add("on");});vid.src="hero.mp4";}
+})();
+
+renderKinds(); renderScope(); renderFilters(); renderMoves(); renderTropes();
+var start=location.hash.slice(1);
+showBook(byId[start]?start:(shelf[0]||"acotar"), !!byId[start]);
+deal(false);
+fetchCovers();
+</script>
+</body>
+</html>
